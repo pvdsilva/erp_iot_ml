@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit"></i> Editar Produto</h2>
+    <a href="{{ url_for('produtos') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">Dados do Produto</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome do Produto *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" 
+                               value="{{ produto.nome }}" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="data_entrada" class="form-label">Data de Entrada *</label>
+                        <input type="date" class="form-control" id="data_entrada" name="data_entrada" 
+                               value="{{ produto.data_entrada }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="quantidade" class="form-label">Quantidade *</label>
+                        <input type="number" step="0.01" class="form-control" id="quantidade" name="quantidade" 
+                               value="{{ produto.quantidade }}" required min="0">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="unidade" class="form-label">Unidade *</label>
+                        <select class="form-select" id="unidade" name="unidade" required>
+                            <option value="">Selecione a unidade</option>
+                            <option value="un" {% if produto.unidade == 'un' %}selected{% endif %}>Unidade</option>
+                            <option value="kg" {% if produto.unidade == 'kg' %}selected{% endif %}>Kilograma</option>
+                            <option value="g" {% if produto.unidade == 'g' %}selected{% endif %}>Grama</option>
+                            <option value="l" {% if produto.unidade == 'l' %}selected{% endif %}>Litro</option>
+                            <option value="ml" {% if produto.unidade == 'ml' %}selected{% endif %}>Mililitro</option>
+                            <option value="m" {% if produto.unidade == 'm' %}selected{% endif %}>Metro</option>
+                            <option value="cm" {% if produto.unidade == 'cm' %}selected{% endif %}>Centímetro</option>
+                            <option value="cx" {% if produto.unidade == 'cx' %}selected{% endif %}>Caixa</option>
+                            <option value="pc" {% if produto.unidade == 'pc' %}selected{% endif %}>Peça</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="id_fornecedor" class="form-label">Fornecedor</label>
+                        <select class="form-select" id="id_fornecedor" name="id_fornecedor">
+                            <option value="">Selecione o fornecedor</option>
+                            {% for fornecedor in fornecedores %}
+                            <option value="{{ fornecedor.id }}" 
+                                    {% if produto.id_fornecedor == fornecedor.id %}selected{% endif %}>
+                                {{ fornecedor.nome }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <textarea class="form-control" id="descricao" name="descricao" rows="3">{{ produto.descricao or '' }}</textarea>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="nota_fiscal" class="form-label">Nº Nota Fiscal</label>
+                        <input type="text" class="form-control" id="nota_fiscal" name="nota_fiscal" 
+                               value="{{ produto.nota_fiscal or '' }}">
+                        <div class="mb-3">
+                            <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+                            <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" 
+                                   value="{{ produto.estoque_minimo or 0 }}" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="preco_custo" class="form-label">Preço de Custo *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" step="0.01" class="form-control" id="preco_custo" name="preco_custo" 
+                                   value="{{ produto.preco_custo }}" required min="0">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="margem_lucro" class="form-label">Margem de Lucro (%) *</label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="margem_lucro" name="margem_lucro" 
+                                   value="{{ produto.margem_lucro }}" required min="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="preco_venda" class="form-label">Preço de Venda</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" step="0.01" class="form-control" id="preco_venda" 
+                                   value="{{ produto.preco_venda }}" readonly>
+                        </div>
+                        <div class="form-text">Calculado automaticamente</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3 form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="ativo" name="ativo" value="1" 
+                       {% if produto.ativo %}checked{% endif %}>
+                <label class="form-check-label" for="ativo">Produto Ativo</label>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Atualizar Produto
+                </button>
+                <a href="{{ url_for('produtos') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Calcular preço de venda automaticamente
+    function calcularPrecoVenda() {
+        const precoCusto = parseFloat(document.getElementById('preco_custo').value) || 0;
+        const margemLucro = parseFloat(document.getElementById('margem_lucro').value) || 0;
+        const precoVenda = precoCusto * (1 + margemLucro / 100);
+        
+        document.getElementById('preco_venda').value = precoVenda.toFixed(2);
+    }
+    
+    document.getElementById('preco_custo').addEventListener('input', calcularPrecoVenda);
+    document.getElementById('margem_lucro').addEventListener('input', calcularPrecoVenda);
+    
+    // Calcular na carga inicial
+    document.addEventListener('DOMContentLoaded', calcularPrecoVenda);
+</script>
+{% endblock %}

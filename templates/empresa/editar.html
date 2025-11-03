@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-building"></i> Dados da Empresa</h2>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">Informações da Empresa</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('editar_empresa') }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo *</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="pf" {% if empresa.tipo == 'pf' %}selected{% endif %}>Pessoa Física</option>
+                            <option value="pj" {% if empresa.tipo == 'pj' %}selected{% endif %}>Pessoa Jurídica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" 
+                               value="{{ empresa.nome }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="documento" class="form-label">Documento (CPF/CNPJ) *</label>
+                        <input type="text" class="form-control" id="documento" name="documento" 
+                               value="{{ empresa.documento }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ empresa.email or '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" 
+                               value="{{ empresa.telefone or '' }}" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="endereco" class="form-label">Endereço</label>
+                <textarea class="form-control" id="endereco" name="endereco" rows="3">{{ empresa.endereco or '' }}</textarea>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Dados
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="card-title mb-0">Informações do Sistema</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Versão do Sistema:</strong> ERP IoT ML 1.0</p>
+                <p><strong>Data de Instalação:</strong> {{ session.get('data_instalacao', '25/10/2025') }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Usuário Logado:</strong> {{ session.user_name }}</p>
+                <p><strong>Tipo de Acesso:</strong> {{ session.user_type|title }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

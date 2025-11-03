@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Produtos</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('adicionar_produto') }}" class="btn btn-primary">Adicionar Produto</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Quantidade</th>
+                <th>Preço Custo</th>
+                <th>Preço Venda</th>
+                <th>Fornecedor</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos %}
+            <tr>
+                <td>{{ produto.id }}</td>
+                <td>{{ produto.nome }}</td>
+                <td>{{ produto.quantidade }} {{ produto.unidade }}</td>
+                <td>R$ {{ "%.2f"|format(produto.preco_custo) }}</td>
+                <td>R$ {{ "%.2f"|format(produto.preco_venda) }}</td>
+                <td>{{ produto.nome_fornecedor or 'N/A' }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if produto.ativo else 'danger' }}">
+                        {{ 'Ativo' if produto.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_produto', id=produto.id) }}" class="btn btn-sm btn-info">Editar</a>
+                    <button onclick="toggleProduto({{ produto.id }}, {{ produto.ativo|lower }})" 
+                            class="btn btn-sm btn-{{ 'danger' if produto.ativo else 'success' }}">
+                        {{ 'Desativar' if produto.ativo else 'Ativar' }}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function toggleProduto(id, ativoAtual) {
+    const acao = ativoAtual ? 'desativar' : 'ativar';
+    const confirmMessage = ativoAtual 
+        ? 'Deseja realmente desativar este produto?' 
+        : 'Deseja ativar este produto?';
+    
+    if (confirm(confirmMessage)) {
+        fetch(`/produtos/${id}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Erro ao ' + acao + ' produto');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao ' + acao + ' produto');
+        });
+    }
+}
+</script>
+{% endblock %}

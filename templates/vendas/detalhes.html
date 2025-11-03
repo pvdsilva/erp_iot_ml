@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-receipt"></i> Detalhes da Venda #{{ venda.id }}</h2>
+            <div class="btn-group">
+                {% if venda.status != 'cancelada' %}
+                <button onclick="cancelarVenda({{ venda.id }})" class="btn btn-danger">
+                    <i class="fas fa-times"></i> Cancelar Venda
+                </button>
+                {% endif %}
+                <a href="{{ url_for('imprimir_venda', id=venda.id) }}" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-print"></i> Imprimir Recibo
+                </a>
+                <a href="{{ url_for('vendas') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <!-- Informações da Venda -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Informações da Venda</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <p><strong>Nº Venda:</strong> #{{ venda.id }}</p>
+                                <p><strong>Data:</strong> {{ venda.data_venda.strftime('%d/%m/%Y %H:%M') }}</p>
+                                <p><strong>Forma de Pagamento:</strong> 
+                                    <span class="badge bg-{{ 'success' if venda.forma_pagamento == 'dinheiro' else 'primary' if venda.forma_pagamento == 'cartao_credito' else 'info' if venda.forma_pagamento == 'cartao_debito' else 'warning' if venda.forma_pagamento == 'pix' else 'secondary' }}">
+                                        {{ venda.forma_pagamento|title }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Status:</strong>
+                                    <span class="badge bg-{{ 'danger' if venda.status == 'cancelada' else 'success' if venda.status == 'concluida' else 'warning' }}">
+                                        {% if venda.status == 'concluida' %}
+                                            CONCLUÍDA
+                                        {% elif venda.status == 'cancelada' %}
+                                            CANCELADA
+                                        {% else %}
+                                            {{ venda.status|upper }}
+                                        {% endif %}
+                                    </span>
+                                </p>
+                                <p><strong>Subtotal:</strong> R$ {{ "%.2f"|format(venda.valor_total + venda.desconto) }}</p>
+                                <p><strong>Desconto:</strong> R$ {{ "%.2f"|format(venda.desconto) }}</p>
+                                <p><strong class="h5">Total:</strong> <span class="h5 text-success">R$ {{ "%.2f"|format(venda.valor_total) }}</span></p>
+                            </div>
+                        </div>
+                        
+                        {% if venda.nome_cliente %}
+                        <hr>
+                        <h6>Informações do Cliente</h6>
+                        <p><strong>Nome:</strong> {{ venda.nome_cliente }}</p>
+                        {% if venda.email_cliente %}
+                        <p><strong>Email:</strong> {{ venda.email_cliente }}</p>
+                        {% endif %}
+                        {% endif %}
+                        
+                        {% if venda.observacoes %}
+                        <hr>
+                        <h6>Observações</h6>
+                        <p class="text-muted">{{ venda.observacoes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Itens da Venda -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">Itens da Venda</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Produto</th>
+                                        <th class="text-center">Qtd</th>
+                                        <th class="text-end">Unit.</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in itens %}
+                                    <tr>
+                                        <td>{{ item.nome_produto }}</td>
+                                        <td class="text-center">{{ item.quantidade }} {{ item.unidade }}</td>
+                                        <td class="text-end">R$ {{ "%.2f"|format(item.preco_unitario) }}</td>
+                                        <td class="text-end">R$ {{ "%.2f"|format(item.total_item) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                        <td class="text-end"><strong>R$ {{ "%.2f"|format(venda.valor_total + venda.desconto) }}</strong></td>
+                                    </tr>
+                                    {% if venda.desconto > 0 %}
+                                    <tr>
+                                        <td colspan="3" class="text-end"><strong>Desconto:</strong></td>
+                                        <td class="text-end text-danger"><strong>-R$ {{ "%.2f"|format(venda.desconto) }}</strong></td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr class="table-active">
+                                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                        <td class="text-end"><strong class="h5">R$ {{ "%.2f"|format(venda.valor_total) }}</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aviso de Cancelamento -->
+        {% if venda.status == 'cancelada' %}
+        <div class="alert alert-warning mt-4">
+            <h5><i class="fas fa-exclamation-triangle"></i> Venda Cancelada</h5>
+            <p class="mb-0">Esta venda foi cancelada e os produtos foram repostos no estoque.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function cancelarVenda(id) {
+    if (confirm('⚠️ ATENÇÃO!\n\nTem certeza que deseja cancelar esta venda?\n\n✅ Os produtos serão repostos automaticamente no estoque\n❌ Esta ação não pode ser desfeita')) {
+        
+        // Mostrar loading
+        const btn = event.target;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelando...';
+        btn.disabled = true;
+        
+        fetch(`/vendas/${id}/cancelar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Erro ao cancelar venda');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('✅ Venda cancelada com sucesso!\n\nOs produtos foram repostos no estoque.');
+                location.reload();
+            } else {
+                throw new Error(data.error || 'Erro ao cancelar venda');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Erro ao cancelar venda: ' + error.message);
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+    }
+}
+
+// Prevenir envio duplo
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.disabled) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    });
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.btn-group .btn {
+    margin-left: 0.5rem;
+}
+
+.badge {
+    font-size: 0.75em;
+    padding: 0.4em 0.6em;
+}
+
+.alert {
+    border: none;
+    border-left: 4px solid;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+}
+</style>
+{% endblock %}

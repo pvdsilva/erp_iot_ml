@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Fornecedores</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('adicionar_fornecedor') }}" class="btn btn-primary">Adicionar Fornecedor</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Documento</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fornecedor in fornecedores %}
+            <tr>
+                <td>{{ fornecedor.id }}</td>
+                <td>{{ fornecedor.nome }}</td>
+                <td>{{ 'Pessoa Jurídica' if fornecedor.tipo == 'pj' else 'Pessoa Física' }}</td>
+                <td>{{ fornecedor.documento }}</td>
+                <td>{{ fornecedor.email }}</td>
+                <td>{{ fornecedor.telefone }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if fornecedor.ativo else 'danger' }}">
+                        {{ 'Ativo' if fornecedor.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_fornecedor', id=fornecedor.id) }}" class="btn btn-sm btn-info">Editar</a>
+                    <button onclick="toggleFornecedor({{ fornecedor.id }}, {{ fornecedor.ativo|lower }})" 
+                            class="btn btn-sm btn-{{ 'danger' if fornecedor.ativo else 'success' }}">
+                        {{ 'Desativar' if fornecedor.ativo else 'Ativar' }}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function toggleFornecedor(id, ativoAtual) {
+    const acao = ativoAtual ? 'desativar' : 'ativar';
+    const confirmMessage = ativoAtual 
+        ? 'Deseja realmente desativar este fornecedor?' 
+        : 'Deseja ativar este fornecedor?';
+    
+    if (confirm(confirmMessage)) {
+        fetch(`/fornecedores/${id}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Erro ao ' + acao + ' fornecedor');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao ' + acao + ' fornecedor');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-file-invoice-dollar"></i> Orçamentos</h2>
+            <a href="{{ url_for('novo_orcamento') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Novo Orçamento
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+    <div class="card-body">
+        {% if orcamentos %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Nº</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Validade</th>
+                        <th>Valor Total</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orcamento in orcamentos %}
+                    <tr>
+                        <td>{{ orcamento.id }}</td>
+                        <td>{{ orcamento.nome_cliente or 'Não informado' }}</td>
+                        <td>{{ orcamento.data_criacao.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ orcamento.validade }} dias</td>
+                        <td>R$ {{ "%.2f"|format(orcamento.valor_total) }}</td>
+                        <td>
+                            <!-- DEBUG: Mostrar o status real do banco -->
+                            <small class="text-muted d-block" style="font-size: 10px;">(DB: {{ orcamento.status }})</small>
+                            
+                            {% if orcamento.status == 'aprovado' %}
+                                <span class="badge bg-success">Aprovado</span>
+                            {% elif orcamento.status == 'cancelado' %}
+                                <span class="badge bg-danger">Cancelado</span>
+                            {% elif orcamento.status == 'convertido' %}
+                                <span class="badge bg-info">Convertido</span>
+                            {% elif orcamento.status == 'pendente' %}
+                                <span class="badge bg-warning">Pendente</span>
+                            {% else %}
+                                <!-- Se chegar aqui, é um status inválido -->
+                                <span class="badge bg-dark" title="Status inválido: {{ orcamento.status }}">Inválido</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('detalhes_orcamento', id=orcamento.id) }}" class="btn btn-sm btn-info" title="Visualizar">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('imprimir_orcamento', id=orcamento.id) }}" class="btn btn-sm btn-success" title="Imprimir" target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                
+                                <!-- Orçamentos PENDENTES -->
+                                {% if orcamento.status == 'pendente' %}
+                                <a href="{{ url_for('aprovar_orcamento', id=orcamento.id) }}" class="btn btn-sm btn-primary" title="Aprovar Orçamento" 
+                                   onclick="return confirm('Tem certeza que deseja aprovar este orçamento?')">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <a href="{{ url_for('cancelar_orcamento', id=orcamento.id) }}" class="btn btn-sm btn-danger" title="Cancelar Orçamento"
+                                   onclick="return confirm('Tem certeza que deseja cancelar este orçamento?')">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                <a href="{{ url_for('converter_orcamento_venda', id=orcamento.id) }}" class="btn btn-sm btn-warning" title="Converter em Venda"
+                                   onclick="return confirm('Tem certeza que deseja converter este orçamento em venda? Esta ação não pode ser desfeita.')">
+                                    <i class="fas fa-cash-register"></i>
+                                </a>
+                                
+                                <!-- Orçamentos APROVADOS -->
+                                {% elif orcamento.status == 'aprovado' %}
+                                <a href="{{ url_for('cancelar_orcamento', id=orcamento.id) }}" class="btn btn-sm btn-danger" title="Cancelar Orçamento"
+                                   onclick="return confirm('Tem certeza que deseja cancelar este orçamento?')">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                                <a href="{{ url_for('converter_orcamento_venda', id=orcamento.id) }}" class="btn btn-sm btn-warning" title="Converter em Venda"
+                                   onclick="return confirm('Tem certeza que deseja converter este orçamento em venda? Esta ação não pode ser desfeita.')">
+                                    <i class="fas fa-cash-register"></i>
+                                </a>
+                                
+                                <!-- Orçamentos CANCELADOS ou CONVERTIDOS -->
+                                {% elif orcamento.status in ['cancelado', 'convertido'] %}
+                                <span class="btn btn-sm btn-secondary disabled" title="Ações não disponíveis para este status">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                
+                                <!-- Status inválido -->
+                                {% else %}
+                                <span class="btn btn-sm btn-dark disabled" title="Status inválido - contate o administrador">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+            <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+            <p>Nenhum orçamento encontrado.</p>
+            <a href="{{ url_for('novo_orcamento') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Criar Primeiro Orçamento
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+    </div>
+</div>
+{% endblock %}

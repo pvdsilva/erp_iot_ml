@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit"></i> Editar Fornecedor</h2>
+    <a href="{{ url_for('fornecedores') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">Dados do Fornecedor</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo *</label>
+                        <select class="form-select" id="tipo" name="tipo" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="pf" {% if fornecedor.tipo == 'pf' %}selected{% endif %}>Pessoa Física</option>
+                            <option value="pj" {% if fornecedor.tipo == 'pj' %}selected{% endif %}>Pessoa Jurídica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome *</label>
+                        <input type="text" class="form-control" id="nome" name="nome" 
+                               value="{{ fornecedor.nome }}" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="documento" class="form-label">Documento (CPF/CNPJ) *</label>
+                        <input type="text" class="form-control" id="documento" name="documento" 
+                               value="{{ fornecedor.documento }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ fornecedor.email or '' }}">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" 
+                               value="{{ fornecedor.telefone or '' }}" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="endereco" class="form-label">Endereço</label>
+                        <textarea class="form-control" id="endereco" name="endereco" rows="2">{{ fornecedor.endereco or '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3 form-check form-switch">
+                <input type="checkbox" class="form-check-input" id="ativo" name="ativo" value="1" 
+                       {% if fornecedor.ativo %}checked{% endif %}>
+                <label class="form-check-label" for="ativo">Fornecedor Ativo</label>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Atualizar Fornecedor
+                </button>
+                <a href="{{ url_for('fornecedores') }}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

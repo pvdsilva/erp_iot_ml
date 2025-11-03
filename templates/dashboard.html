@@ -1,0 +1,1157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- AÇÕES RÁPIDAS -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-dark text-white text-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-2">
+                            <a href="{{ url_for('nova_venda') }}" class="btn btn-outline-primary w-100 h-100 py-3">
+                                <i class="fas fa-cash-register fa-2x mb-2"></i><br>
+                                Nova Venda
+                            </a>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-2">
+                            <a href="{{ url_for('novo_orcamento') }}" class="btn btn-outline-success w-100 h-100 py-3">
+                                <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i><br>
+                                Novo Orçamento
+                            </a>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-2">
+                            <a href="{{ url_for('adicionar_produto') }}" class="btn btn-outline-info w-100 h-100 py-3">
+                                <i class="fas fa-plus-circle fa-2x mb-2"></i><br>
+                                Adicionar Produto
+                            </a>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-2">
+                            <a href="{{ url_for('adicionar_cliente') }}" class="btn btn-outline-warning w-100 h-100 py-3">
+                                <i class="fas fa-user-plus fa-2x mb-2"></i><br>
+                                Cadastrar Cliente
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Primeira Linha: Cards Principais -->
+    <div class="row">
+        <!-- Card de Inventário Total -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-primary text-white text-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-boxes me-2"></i>Inventário Total
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-success fw-bold">R$ {{ "%.2f"|format(total_inventory) }}</h2>
+                    <p class="text-muted mb-3">Valor total em estoque</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('produtos') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye me-1"></i> Visualizar Estoque
+                        </a>
+                        <a href="{{ url_for('relatorio_inventario') }}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-print me-1"></i> Imprimir Relatório
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Estatísticas Rápidas -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-info text-white text-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Estatísticas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-2 bg-light">
+                                <i class="fas fa-box text-primary fa-lg mb-2"></i>
+                                <h6 class="mb-1">Produtos</h6>
+                                <h5 class="mb-0 text-primary" id="total-produtos">-</h5>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-2 bg-light">
+                                <i class="fas fa-users text-success fa-lg mb-2"></i>
+                                <h6 class="mb-1">Clientes</h6>
+                                <h5 class="mb-0 text-success" id="total-clientes">-</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2 bg-light">
+                                <i class="fas fa-truck text-info fa-lg mb-2"></i>
+                                <h6 class="mb-1">Fornecedores</h6>
+                                <h5 class="mb-0 text-info" id="total-fornecedores">-</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2 bg-light">
+                                <i class="fas fa-file-alt text-warning fa-lg mb-2"></i>
+                                <h6 class="mb-1">Orçamentos</h6>
+                                <h5 class="mb-0 text-warning" id="total-orcamentos">-</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Alertas de Estoque -->
+        <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-warning text-dark text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Alertas de Estoque
+                            <span class="badge bg-danger ms-2" id="alertas-count-badge">
+                                {{ low_stock_alerts|length if low_stock_alerts else 0 }}
+                            </span>
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-outline-dark" onclick="forcarAtualizacaoAlertas()" 
+                                title="Atualizar alertas">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0" id="stock-alerts-container">
+                    {% if low_stock_alerts %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">Produto</th>
+                                    <th class="text-center">Estoque Atual</th>
+                                    <th class="text-center">Mínimo</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alert in low_stock_alerts %}
+                                <tr class="{% if alert.quantidade <= 0 %}table-danger{% else %}table-warning{% endif %}">
+                                    <td class="text-truncate text-center" style="max-width: 120px;" title="{{ alert.nome }}">
+                                        {{ alert.nome }}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge {% if alert.quantidade <= 0 %}bg-danger{% else %}bg-warning{% endif %}">
+                                            {{ alert.quantidade }} {{ alert.unidade }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{ alert.estoque_minimo }} {{ alert.unidade }}</td>
+                                    <td class="text-center">
+                                        {% if alert.quantidade <= 0 %}
+                                            <span class="badge bg-danger">ESGOTADO</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">BAIXO</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted p-4">
+                        <i class="fas fa-check-circle fa-2x mb-2"></i>
+                        <p>Nenhum alerta de estoque baixo.</p>
+                        <small class="text-muted">Todos os produtos com estoque normal</small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i> 
+                        Atualizado automaticamente a cada minuto
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segunda Linha: Análises e Meteorologia -->
+    <div class="row">
+        <!-- Card de Análise Vendas com Ranking em Relatório -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-success text-white text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Análise Vendas com Ranking em Relatório
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#modalRelatorioMensal"
+                                title="Imprimir relatório de produtos vendidos">
+                            <i class="fas fa-print me-1"></i> Relatório Mensal
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h6 class="text-center"><i class="fas fa-star me-2"></i>Produtos Mais Vendidos:</h6>
+                    {% if sales_analysis.top_products %}
+                    <div class="list-group list-group-flush">
+                        {% for product in sales_analysis.top_products %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span class="text-truncate" style="max-width: 150px;">{{ product.nome }}</span>
+                            <div class="text-end">
+                                <span class="badge bg-primary rounded-pill">{{ product.total_vendido|int }}</span>
+                                <br>
+                                <small class="text-muted">R$ {{ "%.2f"|format(product.total_receita) }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center"><i class="fas fa-info-circle me-1"></i> Nenhum dado de vendas disponível.</p>
+                    {% endif %}
+                    
+                    <h6 class="mt-3 text-center"><i class="fas fa-calendar-day me-2"></i>Movimento por Dia (Vendas do Dia):</h6>
+
+                    <!-- Resumo do Dia Atual -->
+                    {% if sales_analysis.dia_atual and sales_analysis.dia_atual.status == 'com_vendas' %}
+                    <div class="alert alert-info mb-3" id="resumo-dia-atual">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <small class="text-muted">Vendas Hoje</small>
+                                <div class="fw-bold text-primary">{{ sales_analysis.dia_atual.vendas_hoje }}</div>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted">Receita Hoje</small>
+                                <div class="fw-bold text-success">R$ {{ "%.2f"|format(sales_analysis.dia_atual.receita_hoje) }}</div>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted">Clientes</small>
+                                <div class="fw-bold text-info">{{ sales_analysis.dia_atual.clientes_hoje }}</div>
+                            </div>
+                            <div class="col-3">
+                                <small class="text-muted">Ticket Médio</small>
+                                <div class="fw-bold text-warning">R$ {{ "%.2f"|format(sales_analysis.dia_atual.ticket_medio_hoje) }}</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-1">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                Atualizado às {{ sales_analysis.dia_atual.ultima_atualizacao }}
+                            </small>
+                        </div>
+                    </div>
+                    {% elif sales_analysis.dia_atual and sales_analysis.dia_atual.status == 'sem_vendas' %}
+                    <div class="alert alert-warning mb-3 text-center">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Nenhuma venda registrada hoje até o momento
+                        <br>
+                        <small class="text-muted">Atualizado às {{ sales_analysis.dia_atual.ultima_atualizacao }}</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Movimento por Dia - TOTAL BRUTO DO DIA COM ATUALIZAÇÃO AUTOMÁTICA -->
+                    {% if sales_analysis.movement_analysis %}
+                    <div class="list-group list-group-flush" id="movimento-dia-container">
+                        {% for movimento in sales_analysis.movement_analysis %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center 
+                                    {% if movimento.vendas_hoje > 0 %}bg-light-success{% else %}bg-light-warning{% endif %}">
+                            <div>
+                                <strong>{{ movimento.dia_semana }}</strong>
+                                {% if movimento.vendas_hoje > 0 %}
+                                    <span class="badge bg-success ms-1" title="Vendas registradas hoje">
+                                        <i class="fas fa-check me-1"></i>HOJE
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                {% if movimento.vendas_hoje > 0 %}
+                                    <span class="badge bg-primary rounded-pill">{{ movimento.vendas_hoje }} vendas</span>
+                                    <br>
+                                    <strong class="text-success">R$ {{ "%.2f"|format(movimento.receita_hoje) }}</strong>
+                                    <br>
+                                    <small class="text-muted">Total bruto do dia</small>
+                                {% else %}
+                                    <span class="badge bg-secondary rounded-pill">0 vendas</span>
+                                    <br>
+                                    <small class="text-muted">Sem vendas hoje</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center"><i class="fas fa-info-circle me-1"></i> Nenhum movimento registrado hoje.</p>
+                    {% endif %}
+
+                    <!-- Previsões Avançadas Baseadas em Histórico -->
+                    {% if sales_analysis.predictions %}
+                    <h6 class="mt-3 text-center"><i class="fas fa-chart-line me-2"></i>Previsão de Vendas para os Próximos Dias (Base Histórica):</h6>
+                    <div class="list-group list-group-flush">
+                        {% for pred in sales_analysis.predictions %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center
+                                    {% if pred.confianca == 'ALTA' %}bg-light-success
+                                    {% elif pred.confianca == 'MÉDIA' %}bg-light-warning
+                                    {% else %}bg-light-secondary{% endif %}">
+                            <div>
+                                <small class="text-muted">{{ pred.dia_semana }} {{ pred.dia }}</small>
+                                <br>
+                                <span class="badge bg-{% if pred.confianca == 'ALTA' %}success
+                                              {% elif pred.confianca == 'MÉDIA' %}warning
+                                              {% else %}secondary{% endif %}">
+                                    {{ pred.confianca }}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ pred.tendencia }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-primary rounded-pill">R$ {{ "%.2f"|format(pred.previsao) }}</span>
+                                <br>
+                                <small class="text-muted">
+                                    {% for tecnica in pred.tecnicas %}
+                                        {{ tecnica }}{% if not loop.last %} + {% endif %}
+                                    {% endfor %}
+                                </small>
+                                <br>
+                                <small class="text-info">{{ pred.detalhes }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Footer com informações do relatório -->
+                <div class="card-footer bg-light">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="fas fa-file-pdf me-1"></i>
+                                Clique em "Relatório Mensal" para selecionar o mês e gerar relatório de produtos vendidos
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Análise Preditiva Avançada -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-info text-white text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2"></i>Análise Preditiva Avançada
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-brain me-1"></i>IA
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Análise de Movimento por Dia -->
+                    <h6 class="text-center mb-3">
+                        <i class="fas fa-calendar-alt me-2"></i>Padrões de Movimento por Dia
+                    </h6>
+                    
+                    {% if sales_analysis.movement_analysis %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Dia</th>
+                                    <th class="text-center">Vendas Hoje</th>
+                                    <th class="text-center">Receita Hoje</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day in sales_analysis.movement_analysis %}
+                                <tr class="{% if day.vendas_hoje > 0 %}table-success{% else %}table-light{% endif %}">
+                                    <td>
+                                        <strong>{{ day.dia_semana }}</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ day.vendas_hoje }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">R$ {{ "%.2f"|format(day.receita_hoje) }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if day.vendas_hoje > 0 %}
+                                            <span class="badge bg-success">COM VENDAS</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">SEM VENDAS</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">Nenhum dado disponível para análise de movimento.</p>
+                    {% endif %}
+
+                    <!-- Análise de Dias Historicamente Mais Movimentados -->
+                    {% if sales_analysis.historical_trends and sales_analysis.historical_trends.dias_mais_movimentados %}
+                    <h6 class="mt-4 text-center">
+                        <i class="fas fa-chart-line me-2"></i>Dias com Maior Movimento Histórico
+                    </h6>
+
+                    <div class="list-group list-group-flush mt-3">
+                        {% for dia in sales_analysis.historical_trends.dias_mais_movimentados %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center
+                                    {% if loop.index <= 3 %}bg-light-warning{% endif %}">
+                            <div>
+                                <strong class="{% if loop.index == 1 %}text-success{% elif loop.index == 2 %}text-primary{% elif loop.index == 3 %}text-info{% endif %}">
+                                    {{ dia.dia_semana }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-database me-1"></i>
+                                    {{ dia.total_registros }} registros históricos
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-{% if loop.index == 1 %}success{% elif loop.index == 2 %}primary{% else %}info{% endif %} rounded-pill">
+                                    R$ {{ "%.0f"|format(dia.media_receita) }}
+                                </span>
+                                <br>
+                                <small class="text-muted">
+                                    Média histórica
+                                    {% if dia.consistencia == 'ALTA' %}
+                                        <i class="fas fa-check-circle text-success ms-1" title="Alta consistência"></i>
+                                    {% elif dia.consistencia == 'MEDIA' %}
+                                        <i class="fas fa-chart-line text-warning ms-1" title="Média consistência"></i>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-triangle text-secondary ms-1" title="Baixa consistência"></i>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Fatores de Influência -->
+                    {% if sales_analysis.historical_trends.fatores_influencia %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="text-center mb-2">
+                            <i class="fas fa-lightbulb me-2"></i>Fatores de Influência
+                        </h6>
+                        <div class="text-center">
+                            {% for fator in sales_analysis.historical_trends.fatores_influencia %}
+                            <span class="badge bg-info me-1 mb-1">{{ fator }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Coletando dados históricos</strong>
+                        <br>
+                        <small class="text-muted">Análise de padrões será disponibilizada com mais dados.</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Insights Comportamentais Atualizados -->
+                    {% if sales_analysis.temporal_analysis %}
+                    <h6 class="mt-4 text-center">
+                        <i class="fas fa-user-chart me-2"></i>Insights do Dia Atual
+                    </h6>
+
+                    <div class="row text-center mt-3">
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-2 bg-light">
+                                <small class="text-muted">Vendas Hoje</small>
+                                <div class="fw-bold text-primary">
+                                    {{ sales_analysis.dia_atual.vendas_hoje }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="border rounded p-2 bg-light">
+                                <small class="text-muted">Ticket Médio</small>
+                                <div class="fw-bold text-success">
+                                    {% if sales_analysis.dia_atual.ticket_medio_hoje > 0 %}
+                                        R$ {{ "%.2f"|format(sales_analysis.dia_atual.ticket_medio_hoje) }}
+                                    {% else %}
+                                        R$ 0.00
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2 bg-light">
+                                <small class="text-muted">Clientes Atendidos</small>
+                                <div class="fw-bold text-info">
+                                    {{ sales_analysis.dia_atual.clientes_hoje }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-2 bg-light">
+                                <small class="text-muted">Receita Total</small>
+                                <div class="fw-bold text-warning">
+                                    R$ {{ "%.2f"|format(sales_analysis.dia_atual.receita_hoje) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Footer com informações técnicas -->
+                <div class="card-footer bg-light">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <small class="text-muted">
+                                <i class="fas fa-microchip me-1"></i>
+                                Análise usando dados em tempo real do dia atual + histórico
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terceira Linha: Vendas Mensais e Meteorologia -->
+    <div class="row">
+        <!-- Card de Vendas Mensais COM LUCRO -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-secondary text-white text-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Vendas Mensais
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if monthly_sales %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">Mês</th>
+                                    <th class="text-center">Receita</th>
+                                    <th class="text-center">Lucro Líquido</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in monthly_sales %}
+                                <tr>
+                                    <td class="text-center small">
+                                        <strong>{{ sale.mes_formatado or sale.mes }}</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column">
+                                            <small class="text-primary fw-bold">
+                                                R$ {{ "%.2f"|format(sale.total_vendas) }}
+                                            </small>
+                                            <small class="text-muted">
+                                                {{ sale.total_vendas_count }} venda(s)
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex flex-column">
+                                            {% set lucro_liquido = sale.lucro_liquido %}
+                                            {% if lucro_liquido >= 0 %}
+                                                <small class="text-success fw-bold">
+                                                    +R$ {{ "%.2f"|format(lucro_liquido) }}
+                                                </small>
+                                                <small class="text-success">
+                                                    {{ "%.1f"|format(sale.margem_lucro) }}%
+                                                </small>
+                                            {% else %}
+                                                <small class="text-danger fw-bold">
+                                                    -R$ {{ "%.2f"|format(lucro_liquido|abs) }}
+                                                </small>
+                                                <small class="text-danger">
+                                                    {{ "%.1f"|format(sale.margem_lucro) }}%
+                                                </small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Resumo do Mês Atual -->
+                    {% if monthly_sales[0] %}
+                    <div class="card-footer bg-light">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <small class="text-muted">Receita Mês Vigente</small>
+                                <div class="fw-bold text-primary">
+                                    R$ {{ "%.2f"|format(monthly_sales[0].total_vendas) }}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Lucro Líquido Mês Vigente</small>
+                                <div class="fw-bold {% if monthly_sales[0].lucro_liquido >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    R$ {{ "%.2f"|format(monthly_sales[0].lucro_liquido) }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row text-center mt-2">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Valores referentes ao mês vigente (receita e lucro líquido)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center text-muted p-4">
+                        <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                        <p>Nenhum dado de vendas mensais disponível.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card de Meteorologia para Agendamento -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-gradient-primary text-white text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cloud-sun me-2"></i>Meteorologia para Agendamento
+                        </h5>
+                        <select id="cidadeSelect" class="form-select form-select-sm city-select-dark">
+                            <option value="santos">Santos</option>
+                            <option value="sao_vicente">São Vicente</option>
+                            <option value="guaruja">Guarujá</option>
+                            <option value="praia_grande">Praia Grande</option>
+                            <option value="cubatao">Cubatão</option>
+                            <option value="bertioga">Bertioga</option>
+                            <option value="mongagua">Mongaguá</option>
+                            <option value="itanhaem">Itanhaém</option>
+                            <option value="peruibe">Peruíbe</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Layout Original da Meteorologia com Design Atualizado -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h3 class="mb-0 text-center" id="weather-temp">{{ weather_data.current_temp }}°C</h3>
+                            <p class="text-muted mb-0 text-center" id="weather-desc">{{ weather_data.current_description }}</p>
+                            <small class="text-muted text-center d-block" id="weather-details">
+                                <i class="fas fa-wind me-1"></i> {{ weather_data.wind_speed }} m/s • 
+                                <i class="fas fa-tint me-1"></i> {{ weather_data.humidity }}%
+                            </small>
+                        </div>
+                        <img id="weather-icon" src="http://openweathermap.org/img/wn/{{ weather_data.current_icon }}@2x.png" alt="Weather icon" width="80">
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6 class="text-center"><i class="fas fa-calendar-week me-2"></i>Previsão para os próximos dias:</h6>
+                        <div class="row" id="weather-forecast">
+                            {% for day in weather_data.forecast %}
+                            <div class="col-4 text-center mb-2">
+                                <small><strong>{{ day.day }}</strong><br>{{ day.date }}</small><br>
+                                <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png" alt="Weather icon" width="40"><br>
+                                <small>{{ day.temp_min }}° / {{ day.temp_max }}°</small><br>
+                                <small class="text-muted">{{ day.recommendation }}</small>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Seleção de Mês para Relatório -->
+<div class="modal fade" id="modalRelatorioMensal" tabindex="-1" aria-labelledby="modalRelatorioMensalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-success text-white">
+                <h5 class="modal-title" id="modalRelatorioMensalLabel">
+                    <i class="fas fa-print me-2"></i>Relatório de Produtos Vendidos
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Selecione o mês para gerar relatório de produtos vendidos:</p>
+                
+                <div class="mb-3">
+                    <label for="selectMesRelatorio" class="form-label fw-bold">Mês de Referência:</label>
+                    <select class="form-select" id="selectMesRelatorio">
+                        <option value="">Carregando meses disponíveis...</option>
+                    </select>
+                </div>
+                
+                <div id="info-mes-selecionado" class="alert alert-info d-none">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        <span id="info-texto"></span>
+                    </small>
+                </div>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="incluirDetalhes" checked>
+                    <label class="form-check-label" for="incluirDetalhes">
+                        Incluir análise detalhada de rentabilidade
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-success" id="btnGerarRelatorio" disabled>
+                    <i class="fas fa-file-pdf me-1"></i> Gerar Relatório
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Atualizar estatísticas via AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para carregar estatísticas
+    function carregarEstatisticas() {
+        fetch('/api/dashboard/stats')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('total-produtos').textContent = data.total_produtos || '0';
+                    document.getElementById('total-clientes').textContent = data.total_clientes || '0';
+                    document.getElementById('total-fornecedores').textContent = data.total_fornecedores || '0';
+                    document.getElementById('total-orcamentos').textContent = data.total_orcamentos || '0';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar estatísticas:', error);
+                // Define valores padrão em caso de erro
+                document.getElementById('total-produtos').textContent = '0';
+                document.getElementById('total-clientes').textContent = '0';
+                document.getElementById('total-fornecedores').textContent = '0';
+                document.getElementById('total-orcamentos').textContent = '0';
+            });
+    }
+
+    // Carregar estatísticas ao abrir a página
+    carregarEstatisticas();
+
+    // Atualizar a cada 2 minutos
+    setInterval(carregarEstatisticas, 120000);
+});
+
+// Função para forçar atualização de alertas
+function forcarAtualizacaoAlertas() {
+    fetch('/api/stock/alerts')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.alerts) {
+                // Atualizar a contagem de alertas
+                document.getElementById('alertas-count-badge').textContent = data.alerts.length;
+                
+                // Atualizar a tabela de alertas (implementação simplificada)
+                location.reload(); // Recarrega a página para atualizar os dados
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao atualizar alertas:', error);
+            alert('Erro ao atualizar alertas de estoque');
+        });
+}
+
+// Atualização automática do movimento por dia
+function atualizarMovimentoDia() {
+    fetch('/api/dashboard/data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sales_analysis && data.sales_analysis.movement_analysis) {
+                // Atualizar resumo do dia atual
+                if (data.sales_analysis.dia_atual) {
+                    const diaAtual = data.sales_analysis.dia_atual;
+                    const resumoContainer = document.getElementById('resumo-dia-atual');
+                    
+                    if (resumoContainer) {
+                        if (diaAtual.status === 'com_vendas') {
+                            resumoContainer.innerHTML = `
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <small class="text-muted">Vendas Hoje</small>
+                                        <div class="fw-bold text-primary">${diaAtual.vendas_hoje}</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Receita Hoje</small>
+                                        <div class="fw-bold text-success">R$ ${diaAtual.receita_hoje.toFixed(2)}</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Clientes</small>
+                                        <div class="fw-bold text-info">${diaAtual.clientes_hoje}</div>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Ticket Médio</small>
+                                        <div class="fw-bold text-warning">R$ ${diaAtual.ticket_medio_hoje.toFixed(2)}</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Atualizado às ${diaAtual.ultima_atualizacao}
+                                    </small>
+                                </div>
+                            `;
+                            resumoContainer.className = 'alert alert-info mb-3';
+                        } else {
+                            resumoContainer.innerHTML = `
+                                <div class="alert alert-warning mb-3 text-center">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Nenhuma venda registrada hoje até o momento
+                                    <br>
+                                    <small class="text-muted">Atualizado às ${diaAtual.ultima_atualizacao}</small>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
+                // Atualizar movimento por dia
+                const movimentoContainer = document.getElementById('movimento-dia-container');
+                if (movimentoContainer) {
+                    let movimentoHTML = '';
+                    data.sales_analysis.movement_analysis.forEach(movimento => {
+                        movimentoHTML += `
+                            <div class="list-group-item d-flex justify-content-between align-items-center 
+                                        ${movimento.vendas_hoje > 0 ? 'bg-light-success' : 'bg-light-warning'}">
+                                <div>
+                                    <strong>${movimento.dia_semana}</strong>
+                                    ${movimento.vendas_hoje > 0 ? 
+                                        '<span class="badge bg-success ms-1" title="Vendas registradas hoje">' +
+                                        '<i class="fas fa-check me-1"></i>HOJE</span>' : ''}
+                                </div>
+                                <div class="text-end">
+                                    ${movimento.vendas_hoje > 0 ? 
+                                        `<span class="badge bg-primary rounded-pill">${movimento.vendas_hoje} vendas</span>
+                                         <br>
+                                         <strong class="text-success">R$ ${movimento.receita_hoje.toFixed(2)}</strong>
+                                         <br>
+                                         <small class="text-muted">Total bruto do dia</small>` :
+                                        `<span class="badge bg-secondary rounded-pill">0 vendas</span>
+                                         <br>
+                                         <small class="text-muted">Sem vendas hoje</small>`}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    movimentoContainer.innerHTML = movimentoHTML;
+                }
+
+                // Mostrar notificação de atualização
+                mostrarNotificacaoAtualizacao();
+            }
+        })
+        .catch(error => console.error('Erro ao atualizar movimento:', error));
+}
+
+function mostrarNotificacaoAtualizacao() {
+    // Criar notificação toast
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed bottom-0 end-0 p-3';
+    toast.style.zIndex = '11';
+    toast.innerHTML = `
+        <div id="liveToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <i class="fas fa-sync-alt me-2"></i>
+                <strong class="me-auto">Sistema Atualizado</strong>
+                <small>Agora</small>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Dados de vendas atualizados com sucesso!
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Mostrar toast
+    const liveToast = new bootstrap.Toast(document.getElementById('liveToast'));
+    liveToast.show();
+    
+    // Remover toast após alguns segundos
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+// Atualizar a cada 2 minutos
+setInterval(atualizarMovimentoDia, 120000);
+
+// Atualizar imediatamente ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(atualizarMovimentoDia, 1000);
+    
+    // Auto-refresh do dashboard a cada 5 minutos
+    setInterval(function() {
+        window.location.reload();
+    }, 300000);
+});
+
+// Configuração do modal de relatório mensal
+document.addEventListener('DOMContentLoaded', function() {
+    const selectMes = document.getElementById('selectMesRelatorio');
+    const btnGerar = document.getElementById('btnGerarRelatorio');
+    const infoMes = document.getElementById('info-mes-selecionado');
+    const infoTexto = document.getElementById('info-texto');
+
+    // Carregar meses disponíveis
+    fetch('/api/meses-com-vendas')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.meses) {
+                selectMes.innerHTML = '<option value="">Selecione um mês</option>';
+                data.meses.forEach(mes => {
+                    const option = document.createElement('option');
+                    option.value = mes.mes_ano;
+                    option.textContent = `${mes.mes_formatado} (${mes.total_vendas} vendas - R$ ${mes.valor_total.toFixed(2)})`;
+                    selectMes.appendChild(option);
+                });
+            } else {
+                selectMes.innerHTML = '<option value="">Erro ao carregar meses</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao carregar meses:', error);
+            selectMes.innerHTML = '<option value="">Erro ao carregar meses</option>';
+        });
+
+    // Habilitar/desabilitar botão baseado na seleção
+    selectMes.addEventListener('change', function() {
+        const mesSelecionado = this.value;
+        btnGerar.disabled = !mesSelecionado;
+        
+        if (mesSelecionado) {
+            infoTexto.textContent = `Gerar relatório detalhado para ${this.options[this.selectedIndex].text}`;
+            infoMes.classList.remove('d-none');
+        } else {
+            infoMes.classList.add('d-none');
+        }
+    });
+
+    // Gerar relatório
+    btnGerar.addEventListener('click', function() {
+        const mesSelecionado = selectMes.value;
+        const incluirDetalhes = document.getElementById('incluirDetalhes').checked;
+        
+        if (mesSelecionado) {
+            // Extrair ano e mês
+            const [ano, mes] = mesSelecionado.split('-');
+            
+            // Abrir relatório em nova aba
+            const url = `/relatorio/produtos-vendidos-mes/${ano}/${mes}?detalhes=${incluirDetalhes}`;
+            window.open(url, '_blank');
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalRelatorioMensal'));
+            modal.hide();
+        }
+    });
+});
+
+// Configuração do seletor de cidades para meteorologia
+document.addEventListener('DOMContentLoaded', function() {
+    const cidadeSelect = document.getElementById('cidadeSelect');
+    
+    if (cidadeSelect) {
+        cidadeSelect.addEventListener('change', function() {
+            const cidade = this.value;
+            
+            fetch(`/api/weather/${cidade}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Atualizar dados meteorológicos
+                    document.getElementById('weather-temp').textContent = `${data.current_temp}°C`;
+                    document.getElementById('weather-desc').textContent = data.current_description;
+                    document.getElementById('weather-details').innerHTML = `
+                        <i class="fas fa-wind me-1"></i> ${data.wind_speed} m/s • 
+                        <i class="fas fa-tint me-1"></i> ${data.humidity}%
+                    `;
+                    document.getElementById('weather-icon').src = `http://openweathermap.org/img/wn/${data.current_icon}@2x.png`;
+                    
+                    // Atualizar previsão
+                    const forecastContainer = document.getElementById('weather-forecast');
+                    if (forecastContainer && data.forecast) {
+                        let forecastHTML = '';
+                        data.forecast.forEach(day => {
+                            forecastHTML += `
+                                <div class="col-4 text-center mb-2">
+                                    <small><strong>${day.day}</strong><br>${day.date}</small><br>
+                                    <img src="http://openweathermap.org/img/wn/${day.icon}.png" alt="Weather icon" width="40"><br>
+                                    <small>${day.temp_min}° / ${day.temp_max}°</small><br>
+                                    <small class="text-muted">${day.recommendation}</small>
+                                </div>
+                            `;
+                        });
+                        forecastContainer.innerHTML = forecastHTML;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar dados meteorológicos:', error);
+                });
+        });
+    }
+});
+</script>
+
+<style>
+/* Estilos personalizados para melhorar a aparência */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+}
+
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%) !important;
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+}
+
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
+}
+
+/* Estilo para destacar dias com vendas */
+.bg-light-success {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    border-left: 3px solid #28a745 !important;
+}
+
+.bg-light-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-left: 3px solid #ffc107 !important;
+}
+
+.bg-light-secondary {
+    background-color: rgba(108, 117, 125, 0.1) !important;
+    border-left: 3px solid #6c757d !important;
+}
+
+/* Centralização de textos */
+.card-header.text-center .card-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+
+/* Garantir que todos os headers de card estejam centralizados */
+.card-header {
+    text-align: center;
+}
+
+.card-header .card-title {
+    justify-content: center !important;
+}
+
+/* Estilo para o seletor de cidades no card de meteorologia */
+.city-select-dark {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    max-width: 150px;
+}
+
+.city-select-dark option {
+    background-color: #343a40;
+    color: white;
+}
+
+.city-select-dark:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+}
+
+/* Animação de atualização */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.updating {
+    animation: pulse 1s ease-in-out;
+}
+
+/* Responsividade melhorada */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+    }
+    
+    .card-header.text-center .card-title {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .city-select-dark {
+        max-width: 120px;
+        font-size: 0.8rem;
+    }
+    
+    /* Ajustes para mobile */
+    .list-group-item {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}

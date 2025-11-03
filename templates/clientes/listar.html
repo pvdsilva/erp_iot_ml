@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Clientes</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('adicionar_cliente') }}" class="btn btn-primary">Adicionar Cliente</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Tipo</th>
+                <th>Documento</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.id }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>
+                    {% if cliente.tipo == 'pf' %}
+                    Pessoa Física
+                    {% elif cliente.tipo == 'pj' %}
+                    Pessoa Jurídica
+                    {% else %}
+                    Cliente Padrão
+                    {% endif %}
+                </td>
+                <td>{{ cliente.documento }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>{{ cliente.telefone_celular or cliente.telefone_fixo }}</td>
+                <td>
+                    <span class="badge bg-{{ 'success' if cliente.ativo else 'danger' }}">
+                        {{ 'Ativo' if cliente.ativo else 'Inativo' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-info">Editar</a>
+                    <button onclick="toggleCliente({{ cliente.id }}, {{ cliente.ativo|lower }})" 
+                            class="btn btn-sm btn-{{ 'danger' if cliente.ativo else 'success' }}">
+                        {{ 'Desativar' if cliente.ativo else 'Ativar' }}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function toggleCliente(id, ativoAtual) {
+    const acao = ativoAtual ? 'desativar' : 'ativar';
+    const confirmMessage = ativoAtual 
+        ? 'Deseja realmente desativar este cliente?' 
+        : 'Deseja ativar este cliente?';
+    
+    if (confirm(confirmMessage)) {
+        fetch(`/clientes/${id}/toggle`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Erro ao ' + acao + ' cliente');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao ' + acao + ' cliente');
+        });
+    }
+}
+</script>
+{% endblock %}

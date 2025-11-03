@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Adicionar Produto</h2>
+
+<form method="POST">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="nome" class="form-label">Nome</label>
+                <input type="text" class="form-control" id="nome" name="nome" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="data_entrada" class="form-label">Data de Entrada</label>
+                <input type="date" class="form-control" id="data_entrada" name="data_entrada" required>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="quantidade" class="form-label">Quantidade</label>
+                <input type="number" step="0.01" class="form-control" id="quantidade" name="quantidade" required>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="unidade" class="form-label">Unidade</label>
+                <select class="form-select" id="unidade" name="unidade" required>
+                    <option value="">Selecione a unidade</option>
+                    <option value="un">Unidade</option>
+                    <option value="kg">Kilograma</option>
+                    <option value="g">Grama</option>
+                    <option value="l">Litro</option>
+                    <option value="ml">Mililitro</option>
+                    <option value="m">Metro</option>
+                    <option value="cm">Centímetro</option>
+                    <option value="cx">Caixa</option>
+                    <option value="pc">Peça</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="id_fornecedor" class="form-label">Fornecedor</label>
+                <select class="form-select" id="id_fornecedor" name="id_fornecedor">
+                    <option value="">Selecione o fornecedor</option>
+                    {% for fornecedor in fornecedores %}
+                    <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="descricao" class="form-label">Descrição</label>
+                <textarea class="form-control" id="descricao" name="descricao" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label for="nota_fiscal" class="form-label">Nº Nota Fiscal</label>
+                <input type="text" class="form-control" id="nota_fiscal" name="nota_fiscal">
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="preco_custo" class="form-label">Preço de Custo</label>
+                <input type="number" step="0.01" class="form-control" id="preco_custo" name="preco_custo" required>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="margem_lucro" class="form-label">Margem de Lucro (%)</label>
+                <input type="number" step="0.01" class="form-control" id="margem_lucro" name="margem_lucro" required>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="estoque_minimo" class="form-label">Estoque Mínimo</label>
+                <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="0">
+            </div>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a href="{{ url_for('produtos') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+
+<script>
+    // Calcular preço de venda automaticamente
+    document.getElementById('preco_custo').addEventListener('input', calcularPrecoVenda);
+    document.getElementById('margem_lucro').addEventListener('input', calcularPrecoVenda);
+    
+    function calcularPrecoVenda() {
+        const precoCusto = parseFloat(document.getElementById('preco_custo').value) || 0;
+        const margemLucro = parseFloat(document.getElementById('margem_lucro').value) || 0;
+        const precoVenda = precoCusto * (1 + margemLucro / 100);
+        
+        // Não atualizamos um campo, mas poderíamos mostrar o resultado
+        console.log('Preço de venda calculado:', precoVenda.toFixed(2));
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-cash-register"></i> Nova Venda</h2>
+        
+        <form id="formVenda" method="POST">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">Informações da Venda</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="id_cliente" class="form-label">Cliente</label>
+                                <select class="form-select" id="id_cliente" name="id_cliente">
+                                    <option value="">Selecione um cliente</option>
+                                    {% for cliente in clientes %}
+                                    <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
+                                <select class="form-select" id="forma_pagamento" name="forma_pagamento" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="Cartão de Débito">Cartão de Débito</option>
+                                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                    <option value="PIX">PIX</option>
+                                    <option value="Transferência">Transferência</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="desconto" class="form-label">Desconto (R$)</label>
+                                <input type="number" class="form-control" id="desconto" name="desconto" value="0" step="0.01" min="0">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="observacoes" class="form-label">Observações</label>
+                                <textarea class="form-control" id="observacoes" name="observacoes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="card-title mb-0">Resumo da Venda</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">R$ 0,00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Desconto:</span>
+                                <span id="desconto-display">R$ 0,00</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Total:</strong>
+                                <strong id="total">R$ 0,00</strong>
+                            </div>
+                            
+                            <input type="hidden" id="valor_total" name="valor_total" value="0">
+                            <input type="hidden" id="itens" name="itens" value="[]">
+                            
+                            <button type="submit" class="btn btn-success w-100" id="btnFinalizar">
+                                <i class="fas fa-check"></i> Finalizar Venda
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Itens da Venda</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label">Produto</label>
+                            <select class="form-select" id="selectProduto">
+                                <option value="">Selecione um produto</option>
+                                {% for produto in produtos %}
+                                <option value="{{ produto.id }}" data-preco="{{ produto.preco_venda }}" data-estoque="{{ produto.quantidade }}" data-nome="{{ produto.nome }}">
+                                    {{ produto.nome }} - R$ {{ "%.2f"|format(produto.preco_venda) }} (Estoque: {{ produto.quantidade }} {{ produto.unidade }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Quantidade</label>
+                            <input type="number" class="form-control" id="quantidadeItem" value="1" min="1" step="1">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Preço Unit.</label>
+                            <input type="number" class="form-control" id="precoUnitario" step="0.01" min="0" readonly>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" class="btn btn-primary w-100" id="btnAdicionarItem">
+                                <i class="fas fa-plus"></i> Adicionar Item
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="tabelaItens">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Total</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpoTabelaItens">
+                                <!-- Itens serão adicionados aqui via JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Variáveis globais
+let itens = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const selectProduto = document.getElementById('selectProduto');
+    const quantidadeItem = document.getElementById('quantidadeItem');
+    const precoUnitario = document.getElementById('precoUnitario');
+    const btnAdicionarItem = document.getElementById('btnAdicionarItem');
+    const corpoTabelaItens = document.getElementById('corpoTabelaItens');
+    const subtotalElement = document.getElementById('subtotal');
+    const descontoElement = document.getElementById('desconto');
+    const descontoDisplay = document.getElementById('desconto-display');
+    const totalElement = document.getElementById('total');
+    const valorTotalHidden = document.getElementById('valor_total');
+    const itensHidden = document.getElementById('itens');
+    const formVenda = document.getElementById('formVenda');
+    const btnFinalizar = document.getElementById('btnFinalizar');
+
+    // Atualizar preço quando produto for selecionado
+    selectProduto.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const preco = selectedOption.getAttribute('data-preco');
+            const estoque = selectedOption.getAttribute('data-estoque');
+            precoUnitario.value = parseFloat(preco).toFixed(2);
+            quantidadeItem.max = estoque;
+            
+            // Reset quantidade se exceder estoque
+            if (parseInt(quantidadeItem.value) > parseInt(estoque)) {
+                quantidadeItem.value = estoque;
+            }
+        } else {
+            precoUnitario.value = '';
+            quantidadeItem.max = '';
+        }
+    });
+
+    // Adicionar item à venda
+    btnAdicionarItem.addEventListener('click', function() {
+        const produtoId = selectProduto.value;
+        const produtoTexto = selectProduto.options[selectProduto.selectedIndex].text;
+        const produtoNome = selectProduto.options[selectProduto.selectedIndex].getAttribute('data-nome');
+        const quantidade = parseInt(quantidadeItem.value);
+        const preco = parseFloat(precoUnitario.value);
+
+        if (!produtoId || quantidade <= 0 || preco <= 0) {
+            alert('Preencha todos os campos corretamente!');
+            return;
+        }
+
+        // Verificar estoque
+        const estoque = parseInt(selectProduto.options[selectProduto.selectedIndex].getAttribute('data-estoque'));
+        if (quantidade > estoque) {
+            alert(`Estoque insuficiente! Disponível: ${estoque}`);
+            return;
+        }
+
+        // Verificar se produto já está na lista
+        const itemExistente = itens.find(item => item.id_produto === produtoId);
+        if (itemExistente) {
+            if (confirm('Este produto já está na venda. Deseja atualizar a quantidade?')) {
+                itemExistente.quantidade = quantidade;
+                itemExistente.total = quantidade * preco;
+                atualizarTabelaItens();
+                atualizarResumo();
+                limparCamposItem();
+            }
+            return;
+        }
+
+        // Adicionar item à lista
+        const item = {
+            id_produto: produtoId,
+            nome: produtoNome,
+            quantidade: quantidade,
+            preco_unitario: preco,
+            total: quantidade * preco
+        };
+
+        itens.push(item);
+        atualizarTabelaItens();
+        atualizarResumo();
+        limparCamposItem();
+    });
+
+    // Remover item da venda
+    function removerItem(index) {
+        if (confirm('Deseja remover este item da venda?')) {
+            itens.splice(index, 1);
+            atualizarTabelaItens();
+            atualizarResumo();
+        }
+    }
+
+    // Atualizar tabela de itens
+    function atualizarTabelaItens() {
+        corpoTabelaItens.innerHTML = '';
+        
+        if (itens.length === 0) {
+            corpoTabelaItens.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado</td></tr>';
+            return;
+        }
+
+        itens.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.nome}</td>
+                <td>${item.quantidade}</td>
+                <td>R$ ${item.preco_unitario.toFixed(2)}</td>
+                <td>R$ ${item.total.toFixed(2)}</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removerItem(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            corpoTabelaItens.appendChild(row);
+        });
+    }
+
+    // Atualizar resumo da venda
+    function atualizarResumo() {
+        const subtotal = itens.reduce((sum, item) => sum + item.total, 0);
+        const desconto = parseFloat(descontoElement.value) || 0;
+        const total = Math.max(0, subtotal - desconto);
+
+        subtotalElement.textContent = `R$ ${subtotal.toFixed(2)}`;
+        descontoDisplay.textContent = `R$ ${desconto.toFixed(2)}`;
+        totalElement.textContent = `R$ ${total.toFixed(2)}`;
+        valorTotalHidden.value = total.toFixed(2);
+
+        // Habilitar/desabilitar botão de finalizar
+        btnFinalizar.disabled = itens.length === 0;
+    }
+
+    // Limpar campos do item
+    function limparCamposItem() {
+        selectProduto.value = '';
+        quantidadeItem.value = '1';
+        precoUnitario.value = '';
+    }
+
+    // Atualizar resumo quando desconto mudar
+    descontoElement.addEventListener('input', atualizarResumo);
+
+    // Validar formulário antes de enviar
+    formVenda.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (itens.length === 0) {
+            alert('Adicione pelo menos um item à venda!');
+            return;
+        }
+
+        // Verificar se todos os produtos têm estoque suficiente
+        let estoqueInsuficiente = false;
+        let mensagemErro = '';
+        
+        itens.forEach((item, index) => {
+            const option = selectProduto.querySelector(`option[value="${item.id_produto}"]`);
+            if (option) {
+                const estoque = parseInt(option.getAttribute('data-estoque') || 0);
+                if (item.quantidade > estoque) {
+                    estoqueInsuficiente = true;
+                    mensagemErro += `\n${item.nome}: Disponível ${estoque}, Solicitado ${item.quantidade}`;
+                }
+            }
+        });
+
+        if (estoqueInsuficiente) {
+            alert(`Estoque insuficiente:${mensagemErro}`);
+            return;
+        }
+
+        // Mostrar loading
+        const originalText = btnFinalizar.innerHTML;
+        btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        btnFinalizar.disabled = true;
+
+        // Atualizar campo hidden com itens em JSON
+        const itensParaEnviar = itens.map(item => ({
+            id_produto: item.id_produto,
+            quantidade: item.quantidade,
+            preco_unitario: item.preco_unitario
+        }));
+
+        itensHidden.value = JSON.stringify(itensParaEnviar);
+        
+        // Enviar formulário após breve delay para evitar duplicação
+        setTimeout(() => {
+            formVenda.submit();
+        }, 500);
+    });
+
+    // Inicializar tabela
+    atualizarTabelaItens();
+    atualizarResumo();
+});
+
+// Função global para remover itens
+function removerItem(index) {
+    // Encontrar o escopo correto da função
+    if (typeof itens !== 'undefined') {
+        if (confirm('Deseja remover este item da venda?')) {
+            itens.splice(index, 1);
+            
+            // Atualizar interface
+            const corpoTabelaItens = document.getElementById('corpoTabelaItens');
+            const subtotalElement = document.getElementById('subtotal');
+            const descontoElement = document.getElementById('desconto');
+            const descontoDisplay = document.getElementById('desconto-display');
+            const totalElement = document.getElementById('total');
+            const valorTotalHidden = document.getElementById('valor_total');
+            const btnFinalizar = document.getElementById('btnFinalizar');
+            
+            // Atualizar tabela
+            corpoTabelaItens.innerHTML = '';
+            
+            if (itens.length === 0) {
+                corpoTabelaItens.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado</td></tr>';
+            } else {
+                itens.forEach((item, idx) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.nome}</td>
+                        <td>${item.quantidade}</td>
+                        <td>R$ ${item.preco_unitario.toFixed(2)}</td>
+                        <td>R$ ${item.total.toFixed(2)}</td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removerItem(${idx})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    corpoTabelaItens.appendChild(row);
+                });
+            }
+            
+            // Atualizar resumo
+            const subtotal = itens.reduce((sum, item) => sum + item.total, 0);
+            const desconto = parseFloat(descontoElement.value) || 0;
+            const total = Math.max(0, subtotal - desconto);
+
+            subtotalElement.textContent = `R$ ${subtotal.toFixed(2)}`;
+            descontoDisplay.textContent = `R$ ${desconto.toFixed(2)}`;
+            totalElement.textContent = `R$ ${total.toFixed(2)}`;
+            valorTotalHidden.value = total.toFixed(2);
+
+            // Habilitar/desabilitar botão de finalizar
+            btnFinalizar.disabled = itens.length === 0;
+        }
+    }
+}
+</script>
+
+<style>
+/* Estilos para melhorar a usabilidade */
+#precoUnitario[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card-header {
+    font-weight: 600;
+}
+</style>
+{% endblock %}
