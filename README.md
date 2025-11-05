@@ -1,6 +1,6 @@
 # 🏪 ERP IoT ML - Sistema Integrado para Chaveiro (SIC)
 
-## 🎯 Contexto Acadêmico
+## 🎯 Contexto Acadêmico-Projeto Integrador 4 - Realizado Em grupo.
 
 **Instituição**: [Univesp-Universidade Virtual do Estado de São Paulo]
 **Curso**: [Engenharia da Computação] estudante do 7º Ciclo 
