@@ -1,12 +1,9 @@
-# 🏪 ERP IoT ML - Sistema Integrado para Chaveiro (SIC)
-
-## 🎯 Contexto Acadêmico-Projeto Integrador 4 - Realizado Em grupo.
+# 🏪 SIC - Sistema Integrado para Chaveiro(ERP IoT ML)-2º Semestre/2025.
+## Projeto Integrador - Disciplina: DRP02-PJI410 - Sala: 001- Grupo: 017.
+## Alunos do Eixo de Tecnologia-Ciencias de Dados/Engenharia da Computação.
 
 **Instituição**: [Univesp-Universidade Virtual do Estado de São Paulo]
-**Curso**: [Engenharia da Computação] estudante do 7º Ciclo 
-**Período**: [Início no 2º semestre de 2022-Em curso até 1º semestre de 2027]
 **Desenvolvedor**: [Paulo Vicente da Silva]
-**Github**: [https://github.com/pvdsilva] 
 **Email**: [sr.pvds@gmail.com]
 **Whatsapp**: [(13)98153-6856]
 **Linkedin**: [www.linkedin.com/in/sr-pvds]
