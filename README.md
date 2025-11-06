@@ -2,13 +2,13 @@
 ## Projeto Integrador - Disciplina: DRP02-PJI410 - Sala: 001- Grupo: 017.
 ## Alunos do Eixo de Tecnologia-Ciencias de Dados/Engenharia da Computação.
 ## 2º Semestre/2025
-**Instituição**: [Univesp-Universidade Virtual do Estado de São Paulo]
-**Desenvolvedor**: [Paulo Vicente da Silva]
-**Email**: [sr.pvds@gmail.com]
-**Whatsapp**: [(13)98153-6856]
-**Linkedin**: [www.linkedin.com/in/sr-pvds]
-**Instagram**: [@srpvds]
-**Localização**: [Cubatão, SP - Brasil]
+##**Instituição**: [Univesp-Universidade Virtual do Estado de São Paulo]
+##**Desenvolvedor**: [Paulo Vicente da Silva]
+##**Email**: [sr.pvds@gmail.com]
+##**Whatsapp**: [(13)98153-6856]
+##**Linkedin**: [www.linkedin.com/in/sr-pvds]
+##**Instagram**: [@srpvds]
+##**Localização**: [Cubatão, SP - Brasil]
 
 **Disciplinas Aplicadas**:
 - ✅ **Sistemas Inteligentes**: Machine Learning e análise preditiva
