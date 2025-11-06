@@ -1,4 +1,4 @@
-## Univesp-Universidade Virtual do Estado de São Paulo.
+## Univesp - Universidade Virtual do Estado de São Paulo.
 ## Projeto Integrador - Disciplina: DRP02-PJI410 - Sala: 001- Grupo: 017.
 ## Alunos do Eixo de Tecnologia-Ciencias de Dados/Engenharia da Computação.
 ## 2º Semestre/2025
@@ -11,6 +11,7 @@
 **Localização**: [Cubatão, SP - Brasil]
 
 # 🏪 SIC - Sistema Integrado para Chaveiro(ERP IoT ML).
+
 **Disciplinas Aplicadas**:
 - ✅ **Sistemas Inteligentes**: Machine Learning e análise preditiva
 - ✅ **Banco de Dados**: Modelagem relacional e SQL avançado
